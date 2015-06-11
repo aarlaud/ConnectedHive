@@ -4,10 +4,17 @@ Author: Antoine Arlaud - New York Bee Sanctuary
  
 // DHT ----------------------------------------------------------------------------------------
 #include "DHT.h"
-#define DHTPIN 7     // what pin we're connected to
+#define DHTPIN 0     // what pin we're connected to
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
 #define DHTCOUNT 3      // 3 for 8Mhz bootloaders and 6 for 16 Mhz
 DHT dht(DHTPIN, DHTTYPE, DHTCOUNT); // Initialize DHT sensor for normal corresponding frequency
+
+// DHT ----------------------------------------------------------------------------------------
+#include "DHT.h"
+#define DHTPIN 1     // what pin we're connected to
+#define DHTTYPE DHT22   // DHT 22  (AM2302)
+#define DHTCOUNT 3      // 3 for 8Mhz bootloaders and 6 for 16 Mhz
+DHT dht2(DHTPIN, DHTTYPE, DHTCOUNT); // Initialize DHT sensor for normal corresponding frequency
 
 
 // Battery ------------------------------------------------------------------------------------
@@ -15,14 +22,14 @@ DHT dht(DHTPIN, DHTTYPE, DHTCOUNT); // Initialize DHT sensor for normal correspo
 float BatteryVoltage; // Store Battery value to transmit only every BATTERYSAMPLINGRATE measurements as battery
 //value is not to fluctuates so quickly
 int batteryReadingsCount = 0;
-#define BATTERYSAMPLINGRATE 8
+#define BATTERYSAMPLINGRATE 8 //8 but 0 for debug
 
 //RFM69  --------------------------------------------------------------------------------------
 #include <RFM69.h>
 #include <SPI.h>
 #include <LowPower.h>
 
-#define NODEID        9    //unique for each node on same network
+#define NODEID        8    //unique for each node on same network
 #define NETWORKID     101  //the same on all nodes that talk to each other
 #define GATEWAYID     1
 //Match frequency to the hardware version of the radio on your Moteino (uncomment one):
@@ -90,8 +97,13 @@ void setup() {
 void loop() {
       radio.sleep();
       LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); //LowPower.powerDown(SLEEP_FOREVERSLEEP_8S, ADC_OFF, BOD_OFF); 
-      readDHT();
       
+      delay(250);
+      readDHT();
+      delay(500);
+      readDHT2();
+      
+      batteryReadingsCount++;
       if(batteryReadingsCount > BATTERYSAMPLINGRATE){
         batteryReadingsCount = 0;
         readBatteryVoltage();
@@ -106,6 +118,7 @@ void loop() {
         }
       }
       delay(100);
+      
 }
 
 
@@ -115,8 +128,11 @@ void readBatteryVoltage(){
   float Vcc;
 
   Vcc = readVcc()/1000.0;
+  for(int i=0;i<4;i++){
+    BatteryADCValue = analogRead(BATTERYSENSORPIN);// ignore 3 first readings due to high resistor values
+  }
   BatteryADCValue = analogRead(BATTERYSENSORPIN);
-  BatteryVoltage = (BatteryADCValue / 1023.0) * Vcc;
+  BatteryVoltage = (BatteryADCValue / 1023.0) * Vcc *2.0; //x2 as we have a voltage divider (2 1MOhm resistors to split voltage in half)
   
   
 }
@@ -135,6 +151,32 @@ void readDHT(){
   }
 
   theData.deviceID = 9;
+  theData.var1_usl = h;
+  theData.var2_float = t; //convertedTempValue;
+  theData.var3_float = BatteryVoltage;
+  delay(1000); // Give time to ADC to grab value
+  radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData));
+  //radio.send(GATEWAYID, (const void*)(&theData), sizeof(theData));
+  // Serial.println("Sent");
+ 
+  delay(700);
+  //digitalWrite(LED, LOW);
+}
+
+
+void readDHT2(){
+
+  // Reading temperature or humidity takes about 250 milliseconds!
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  float h = dht2.readHumidity();
+  // Read temperature as Celsius
+  float t = dht2.readTemperature();
+  
+  if (isnan(h) || isnan(t)) {
+    digitalWrite(LED, HIGH);
+  }
+
+  theData.deviceID = 7;
   theData.var1_usl = h;
   theData.var2_float = t; //convertedTempValue;
   theData.var3_float = BatteryVoltage;
