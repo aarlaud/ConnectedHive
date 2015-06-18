@@ -155,7 +155,9 @@ void readDHT(){
   theData.var2_float = t; //convertedTempValue;
   theData.var3_float = BatteryVoltage;
   delay(1000); // Give time to ADC to grab value
+  digitalWrite(LED, HIGH);
   radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData));
+  digitalWrite(LED, LOW);
   //radio.send(GATEWAYID, (const void*)(&theData), sizeof(theData));
   // Serial.println("Sent");
  
@@ -181,7 +183,9 @@ void readDHT2(){
   theData.var2_float = t; //convertedTempValue;
   theData.var3_float = BatteryVoltage;
   delay(1000); // Give time to ADC to grab value
+  digitalWrite(LED, HIGH);
   radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData));
+  digitalWrite(LED, LOW);
   //radio.send(GATEWAYID, (const void*)(&theData), sizeof(theData));
   // Serial.println("Sent");
  
