@@ -60,6 +60,12 @@ RFM69 radio(RFM69_SS);
 
 void setup() {
   
+  // set digital pins for low power consumption
+  for (int i = 0; i < 14; i++) {
+    pinMode(i, OUTPUT);
+    digitalWrite(i, LOW);
+  }
+  
   // Setting Led Pin
   pinMode(LED, OUTPUT);
   digitalWrite(LED, HIGH);
@@ -82,7 +88,7 @@ void setup() {
   //end RFM--------------------------------------------
   
  // Serial.println("Finished setup");
-  delay(1000);
+  delay(100);
   digitalWrite(LED, LOW);
   
 }
@@ -92,6 +98,7 @@ void loop() {
       LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); //LowPower.powerDown(SLEEP_FOREVERSLEEP_8S, ADC_OFF, BOD_OFF); 
       readDHT();
       
+      batteryReadingsCount++;
       if(batteryReadingsCount > BATTERYSAMPLINGRATE){
         batteryReadingsCount = 0;
         readBatteryVoltage();
@@ -105,7 +112,7 @@ void loop() {
           radio.sendACK();
         }
       }
-      delay(100);
+     // delay(100);
 }
 
 
@@ -116,8 +123,7 @@ void readBatteryVoltage(){
 
   Vcc = readVcc()/1000.0;
   BatteryADCValue = analogRead(BATTERYSENSORPIN);
-  BatteryVoltage = (BatteryADCValue / 1023.0) * Vcc;
-  
+  BatteryVoltage = (BatteryADCValue / 1023.0) * Vcc * 2.0; // voltage divider gives a factor of 2.
   
 }
 
@@ -138,14 +144,14 @@ void readDHT(){
   theData.var1_usl = h;
   theData.var2_float = t; //convertedTempValue;
   theData.var3_float = BatteryVoltage;
-  delay(1000); // Give time to ADC to grab value
+  delay(2); // Give time to ADC to grab value
   digitalWrite(LED, HIGH);
   radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData));
   digitalWrite(LED, LOW);
   //radio.send(GATEWAYID, (const void*)(&theData), sizeof(theData));
   // Serial.println("Sent");
  
-  delay(700);
+  //delay(700);
   //digitalWrite(LED, LOW);
 }
 

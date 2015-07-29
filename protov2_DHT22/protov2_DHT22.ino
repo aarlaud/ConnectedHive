@@ -67,6 +67,12 @@ RFM69 radio(RFM69_SS);
 
 void setup() {
   
+   // set digital pins for low power consumption
+  for (int i = 0; i < 14; i++) {
+    pinMode(i, OUTPUT);
+    digitalWrite(i, LOW);
+  }
+  
   // Setting Led Pin
   pinMode(LED, OUTPUT);
   digitalWrite(LED, HIGH);
@@ -74,6 +80,7 @@ void setup() {
  
   // Building DHT instance
   dht.begin();
+  dht2.begin();
   
   //RFM69-------------------------------------------
   radio.initialize(FREQUENCY,NODEID,NETWORKID);
@@ -89,7 +96,7 @@ void setup() {
   //end RFM--------------------------------------------
   
  // Serial.println("Finished setup");
-  delay(1000);
+  delay(100);
   digitalWrite(LED, LOW);
   
 }
@@ -98,10 +105,11 @@ void loop() {
       radio.sleep();
       LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF); //LowPower.powerDown(SLEEP_FOREVERSLEEP_8S, ADC_OFF, BOD_OFF); 
       
-      delay(250);
+      //delay(250);
       readDHT();
-      delay(500);
+      delay(2);
       readDHT2();
+      delay(2);
       
       batteryReadingsCount++;
       if(batteryReadingsCount > BATTERYSAMPLINGRATE){
@@ -117,7 +125,7 @@ void loop() {
           radio.sendACK();
         }
       }
-      delay(100);
+     // delay(100);
       
 }
 
@@ -154,14 +162,14 @@ void readDHT(){
   theData.var1_usl = h;
   theData.var2_float = t; //convertedTempValue;
   theData.var3_float = BatteryVoltage;
-  delay(1000); // Give time to ADC to grab value
+  delay(2); // Give time to ADC to grab value
   digitalWrite(LED, HIGH);
   radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData));
   digitalWrite(LED, LOW);
   //radio.send(GATEWAYID, (const void*)(&theData), sizeof(theData));
   // Serial.println("Sent");
  
-  delay(700);
+  //delay(700);
   //digitalWrite(LED, LOW);
 }
 
@@ -182,14 +190,14 @@ void readDHT2(){
   theData.var1_usl = h;
   theData.var2_float = t; //convertedTempValue;
   theData.var3_float = BatteryVoltage;
-  delay(1000); // Give time to ADC to grab value
+  delay(2); // Give time to ADC to grab value
   digitalWrite(LED, HIGH);
   radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData));
   digitalWrite(LED, LOW);
   //radio.send(GATEWAYID, (const void*)(&theData), sizeof(theData));
   // Serial.println("Sent");
  
-  delay(700);
+  //delay(700);
   //digitalWrite(LED, LOW);
 }
 
