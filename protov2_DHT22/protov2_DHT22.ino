@@ -107,9 +107,9 @@ void loop() {
       
       //delay(250);
       readDHT();
-      delay(2);
+      
       readDHT2();
-      delay(2);
+      
       
       batteryReadingsCount++;
       if(batteryReadingsCount > BATTERYSAMPLINGRATE){
@@ -150,9 +150,36 @@ void readDHT(){
 
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  float h = dht.readHumidity();
+  /* reading sensor value directly. Not using the readTemperature function
+   as it sends the last known value if subsequent measurements are within 2 
+   seconds from each other. Sleep function and sleep patterns makes this 
+   no applicable as it causes very long time between 2 readings (millis stops
+   working when sleeping, so reaching a 2s delta takes a long time when
+   device runs for a few hundred ms at times before going back to sleep.
+   Modified dht.cpp to remove this 2000ms mark and made data structure public */
+  float h = 0.0; //dht.readHumidity();
   // Read temperature as Celsius
-  float t = dht.readTemperature();
+  float t = 0.0; //dht.readTemperature();
+
+  if (dht.read()) {
+  
+      t = dht.data[2] & 0x7F;
+      t *= 256;
+      t += dht.data[3];
+      t /= 10;
+      if (dht.data[2] & 0x80)
+	       t *= -1;
+    
+      h = dht.data[0];
+      h *= 256;
+      h += dht.data[1];
+      h /= 10;
+    
+    
+  } else {
+    t=NAN;
+    h=NAN;
+  }
   
   if (isnan(h) || isnan(t)) {
     digitalWrite(LED, HIGH);
@@ -162,7 +189,7 @@ void readDHT(){
   theData.var1_usl = h;
   theData.var2_float = t; //convertedTempValue;
   theData.var3_float = BatteryVoltage;
-  delay(2); // Give time to ADC to grab value
+
   digitalWrite(LED, HIGH);
   radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData));
   digitalWrite(LED, LOW);
@@ -178,9 +205,36 @@ void readDHT2(){
 
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  float h = dht2.readHumidity();
+  /* reading sensor value directly. Not using the readTemperature function
+   as it sends the last known value if subsequent measurements are within 2 
+   seconds from each other. Sleep function and sleep patterns makes this 
+   no applicable as it causes very long time between 2 readings (millis stops
+   working when sleeping, so reaching a 2s delta takes a long time when
+   device runs for a few hundred ms at times before going back to sleep.
+   Modified dht.cpp to remove this 2000ms mark and made data structure public */
+  float h = 0.0; //dht.readHumidity();
   // Read temperature as Celsius
-  float t = dht2.readTemperature();
+  float t = 0.0; //dht.readTemperature();
+
+  if (dht2.read()) {
+  
+      t = dht2.data[2] & 0x7F;
+      t *= 256;
+      t += dht2.data[3];
+      t /= 10;
+      if (dht2.data[2] & 0x80)
+	       t *= -1;
+    
+      h = dht2.data[0];
+      h *= 256;
+      h += dht2.data[1];
+      h /= 10;
+    
+    
+  } else {
+    t=NAN;
+    h=NAN;
+  }
   
   if (isnan(h) || isnan(t)) {
     digitalWrite(LED, HIGH);
@@ -190,7 +244,7 @@ void readDHT2(){
   theData.var1_usl = h;
   theData.var2_float = t; //convertedTempValue;
   theData.var3_float = BatteryVoltage;
-  delay(2); // Give time to ADC to grab value
+
   digitalWrite(LED, HIGH);
   radio.sendWithRetry(GATEWAYID, (const void*)(&theData), sizeof(theData));
   digitalWrite(LED, LOW);
