@@ -213,7 +213,7 @@ void readDHT2(){
    device runs for a few hundred ms at times before going back to sleep.
    Modified dht.cpp to remove this 2000ms mark and made data structure public */
   float h = 0.0; //dht.readHumidity();
-  // Read temperature as Celsius
+  // Read temperature as CelsiusGat
   float t = 0.0; //dht.readTemperature();
 
   if (dht2.read()) {

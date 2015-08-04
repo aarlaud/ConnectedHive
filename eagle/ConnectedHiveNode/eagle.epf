@@ -1,0 +1,15 @@
+[Eagle]
+Version="07 03 00"
+Platform="Mac OS X"
+Serial="62191E841E-LSR-WLM-1EL"
+Globals="Globals"
+Desktop="Desktop"
+
+[Globals]
+AutoSaveProject=1
+UsedLibrary="/Users/aarlaud/Documents/projects/ConnectedHive/eagle/libraries/avr-6.lbr"
+UsedLibrary="/Users/aarlaud/Documents/projects/ConnectedHive/eagle/libraries/RHT03_DHT-22_AM2302.lbr"
+UsedLibrary="/Users/aarlaud/Documents/projects/ConnectedHive/eagle/libraries/SparkFun-DigitalIC.lbr"
+
+[Desktop]
+Screen="1920 1880"
